@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import Header from "../components/header";
 
 // Dados Iniciais de Alunos e Desempenho
@@ -305,12 +306,17 @@ export default function Principal() {
               <p className="hero-description">{currentSlide.desc}</p>
               
               <div className="hero-actions">
-                <button className="hero-primary-btn" onClick={handleOpenAddModal}>
+                <Link href="/cadaluno" className="hero-primary-btn">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
                   </svg>
-                  Lançar Nova Avaliação
+                  Cadastrar Novo Aluno
+                </Link>
+                <button className="hero-secondary-btn" onClick={handleOpenAddModal}>
+                  + Lançar Nota Rápida
                 </button>
                 <button
                   className="hero-secondary-btn"
@@ -449,10 +455,24 @@ export default function Principal() {
                 <h3 className="bento-title">Ações Rápidas</h3>
               </div>
               <div className="quick-action-cards">
+                <Link
+                  href="/cadaluno"
+                  className="quick-action-card"
+                  title="Cadastrar novo estudante com credencial digital"
+                  style={{ textDecoration: "none" }}
+                >
+                  <div className="card-plus-badge">+</div>
+                  <div className="card-avatar-center">🎓</div>
+                  <div className="card-footer-info">
+                    <div className="card-title">Matrícula & Novo Aluno</div>
+                    <div className="card-subtitle">Cadastro completo com RA</div>
+                  </div>
+                </Link>
+
                 <div 
                   className="quick-action-card" 
                   onClick={handleOpenAddModal}
-                  title="Cadastrar nova nota ou aluno"
+                  title="Cadastrar nova nota ou aluno rápido"
                 >
                   <div className="card-plus-badge">+</div>
                   <div className="card-avatar-center">📝</div>
@@ -528,7 +548,8 @@ export default function Principal() {
         <section id="tabela-notas" className="table-section">
           <div className="table-header-row">
             <div className="table-header-title">
-              <h2>📋 Diário de Classe & Rendimento dos Alunos</h2>
+              <span className="section-kicker">Acompanhamento em tempo real</span>
+              <h2>📋 Lista de Alunos</h2>
               <p>Consulte as notas bimestrais, projetos práticos e o status de aprovação de cada estudante.</p>
             </div>
 
@@ -557,6 +578,25 @@ export default function Principal() {
               <button className="btn-add-grade" onClick={handleOpenAddModal}>
                 + Adicionar / Lançar Nota
               </button>
+            </div>
+          </div>
+
+          <div className="student-list-summary" aria-label="Resumo da lista de alunos">
+            <div className="summary-item summary-total">
+              <span className="summary-icon">◎</span>
+              <span><strong>{filteredStudents.length}</strong><small>Exibidos agora</small></span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-icon">✓</span>
+              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.grade1, student.grade2, student.project)).type === "approved").length}</strong><small>Aprovados</small></span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-icon warning">!</span>
+              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.grade1, student.grade2, student.project)).type === "warning").length}</strong><small>Em alerta</small></span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-icon average">★</span>
+              <span><strong>{filteredStudents.length ? (filteredStudents.reduce((total, student) => total + Number(calculateAverage(student.grade1, student.grade2, student.project)), 0) / filteredStudents.length).toFixed(1) : "0.0"}</strong><small>Média da lista</small></span>
             </div>
           </div>
 

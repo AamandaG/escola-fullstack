@@ -852,6 +852,14 @@ button, input, select, textarea {
   gap: 4px;
 }
 
+.section-kicker {
+  color: var(--primary-red);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
 .table-header-title h2 {
   font-size: 22px;
   font-weight: 800;
@@ -943,6 +951,53 @@ button, input, select, textarea {
   transform: translateY(-1px);
 }
 
+.student-list-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 4px 0 22px;
+  padding: 10px;
+  border: 1px solid #f0dfda;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #fff8f6, #fffdfc);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 12px;
+  border-right: 1px solid #f0dfda;
+}
+
+.summary-item:last-child { border-right: 0; }
+
+.summary-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: var(--primary-red);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.summary-icon.warning { background: #fffbeb; color: #b45309; }
+.summary-icon.average { background: #fefce8; color: #b7791f; }
+
+.summary-item span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.summary-item strong { color: #351919; font-size: 17px; line-height: 1.1; }
+.summary-item small { margin-top: 3px; color: var(--text-muted); font-size: 10px; white-space: nowrap; }
+
 /* ==========================================================================
    TABELA DE NOTAS ESTILIZADA
    ========================================================================== */
@@ -980,6 +1035,9 @@ button, input, select, textarea {
   transform: scale(1.002);
   box-shadow: 0 4px 12px rgba(185, 28, 28, 0.06);
 }
+
+.grades-table tbody tr:nth-child(even) { background: #fffdfc; }
+.grades-table tbody tr:nth-child(even):hover { background: #fff8f6; }
 
 .grades-table td {
   padding: 14px 16px;
