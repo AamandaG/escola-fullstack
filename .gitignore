@@ -46,3 +46,4 @@ next-env.d.ts
 
 # arquivos locais / logs do ambiente
 grok_logs.csv
+/db/*.db

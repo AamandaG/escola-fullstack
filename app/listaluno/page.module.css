@@ -73,6 +73,9 @@
 
 .panelTop h2 { margin-top: 7px; color: var(--text-main); font-size: 22px; }
 .countBadge { padding: 8px 13px; border: 1px solid #f0d2ce; border-radius: var(--radius-pill); background: #fff5f3; color: var(--primary-red); font-size: 12px; font-weight: 800; }
+.panelActions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.viewOnlyLink { padding: 8px 13px; border: 1px solid #dbeafe; border-radius: var(--radius-pill); background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 800; text-decoration: none; }
+.viewOnlyLink:hover { background: #dbeafe; }
 
 .stats {
   display: grid;
@@ -86,7 +89,7 @@
 .stats span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 11px; }
 
 .tableWrapper { overflow-x: auto; }
-.table { width: 100%; min-width: 620px; border-collapse: separate; border-spacing: 0 8px; text-align: left; }
+.table { width: 100%; min-width: 800px; border-collapse: separate; border-spacing: 0 8px; text-align: left; }
 .table th { padding: 10px 16px; border-bottom: 2px solid #f2e2de; color: #8c5b5b; font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
 .table td { padding: 16px; border-top: 1px solid #f6eae7; border-bottom: 1px solid #f6eae7; color: #4b3a3a; font-size: 14px; }
 .table tbody tr { background: #fffdfc; transition: background .2s ease, transform .2s ease; }
@@ -99,6 +102,17 @@
 .avatar { background: var(--primary-red-gradient); color: #fff; font-size: 16px; }
 .classBadge { padding: 6px 10px; border-radius: var(--radius-pill); background: #fff1f2; color: #9f1239; font-size: 12px; font-weight: 700; }
 .ra { color: var(--text-muted); font-weight: 700; letter-spacing: .4px; }
+.feedback { padding: 24px 16px !important; color: var(--text-muted) !important; text-align: center; }
+.actions { white-space: nowrap; }
+.actions button { margin-right: 6px; }
+.editInput { width: 100%; min-width: 90px; padding: 8px; border: 1px solid #e5d2cd; border-radius: 8px; color: var(--text-main); }
+.editButton, .saveButton, .cancelButton, .deleteButton { padding: 8px 10px; border: 0; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.editButton { background: #eff6ff; color: #1d4ed8; }
+.saveButton { background: #dcfce7; color: #166534; }
+.cancelButton { background: #f3f4f6; color: #374151; }
+.deleteButton { background: #fee2e2; color: #b91c1c; }
+.actions button:disabled { cursor: wait; opacity: .6; }
+.actionError { margin: 0 0 14px; color: #b42318; font-size: 13px; font-weight: 700; }
 
 @media (max-width: 600px) {
   .content { width: min(100% - 28px, 560px); padding-top: 36px; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Header from "../components/header";
 
@@ -13,9 +13,11 @@ const INITIAL_STUDENTS = [
     subject: "Matemática",
     avatarBg: "art-1",
     emoji: "👩‍🎓",
-    grade1: 9.5,
-    grade2: 10.0,
-    project: 9.8,
+    trabalho1: 9.5,
+    trabalho2: 9.6,
+    nota1: 10.0,
+    nota2: 9.8,
+    nota3: 9.7,
     attendance: "98%",
     isHighlighted: true,
   },
@@ -26,9 +28,11 @@ const INITIAL_STUDENTS = [
     subject: "Matemática",
     avatarBg: "art-2",
     emoji: "👨‍🎓",
-    grade1: 9.8,
-    grade2: 9.6,
-    project: 9.7,
+    trabalho1: 9.8,
+    trabalho2: 9.7,
+    nota1: 9.6,
+    nota2: 9.7,
+    nota3: 9.8,
     attendance: "96%",
     isHighlighted: true,
   },
@@ -39,9 +43,11 @@ const INITIAL_STUDENTS = [
     subject: "Desenvolvimento Web",
     avatarBg: "art-1",
     emoji: "👩‍💻",
-    grade1: 8.5,
-    grade2: 8.0,
-    project: 9.0,
+    trabalho1: 8.5,
+    trabalho2: 8.8,
+    nota1: 8.0,
+    nota2: 9.0,
+    nota3: 8.7,
     attendance: "92%",
     isHighlighted: false,
   },
@@ -52,9 +58,11 @@ const INITIAL_STUDENTS = [
     subject: "Desenvolvimento Web",
     avatarBg: "art-2",
     emoji: "👨‍💻",
-    grade1: 5.0,
-    grade2: 5.5,
-    project: 6.0,
+    trabalho1: 5.0,
+    trabalho2: 5.2,
+    nota1: 5.5,
+    nota2: 6.0,
+    nota3: 5.8,
     attendance: "81%",
     isHighlighted: false,
   },
@@ -65,9 +73,11 @@ const INITIAL_STUDENTS = [
     subject: "Física Geral",
     avatarBg: "art-1",
     emoji: "👩‍🔬",
-    grade1: 7.5,
-    grade2: 8.2,
-    project: 7.8,
+    trabalho1: 7.5,
+    trabalho2: 7.9,
+    nota1: 8.2,
+    nota2: 7.8,
+    nota3: 8.0,
     attendance: "94%",
     isHighlighted: false,
   },
@@ -78,9 +88,11 @@ const INITIAL_STUDENTS = [
     subject: "Matemática",
     avatarBg: "art-2",
     emoji: "🧑‍🏫",
-    grade1: 4.5,
-    grade2: 5.0,
-    project: 5.5,
+    trabalho1: 4.5,
+    trabalho2: 4.8,
+    nota1: 5.0,
+    nota2: 5.5,
+    nota3: 5.2,
     attendance: "78%",
     isHighlighted: false,
   },
@@ -91,9 +103,11 @@ const INITIAL_STUDENTS = [
     subject: "Física Geral",
     avatarBg: "art-1",
     emoji: "🎨",
-    grade1: 9.0,
-    grade2: 9.2,
-    project: 9.5,
+    trabalho1: 9.0,
+    trabalho2: 9.3,
+    nota1: 9.2,
+    nota2: 9.5,
+    nota3: 9.4,
     attendance: "99%",
     isHighlighted: false,
   },
@@ -107,16 +121,68 @@ export default function Principal() {
   const [selectedClass, setSelectedClass] = useState("Todas");
   const [activeFilterPill, setActiveFilterPill] = useState(null);
 
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarAlunos() {
+      try {
+        const resposta = await fetch("/api/alunos", { cache: "no-store" });
+        if (!resposta.ok) throw new Error("Não foi possível carregar os alunos.");
+
+        const dados = await resposta.json();
+        if (!ativo) return;
+
+        setStudents((atuais) => {
+          const nomesExistentes = new Set(atuais.map((aluno) => aluno.name.toLocaleLowerCase("pt-BR")));
+          const novosAlunos = dados.alunos
+            .filter((aluno) => !nomesExistentes.has(aluno.nome.toLocaleLowerCase("pt-BR")))
+            .map((aluno) => ({
+              id: `DB-${aluno.id_aluno}`,
+              name: aluno.nome,
+              class: aluno.serie,
+              subject: "—",
+              avatarBg: "art-1",
+              emoji: "🎓",
+              trabalho1: 0,
+              trabalho2: 0,
+              nota1: 0,
+              nota2: 0,
+              nota3: 0,
+              attendance: "—",
+              isHighlighted: false,
+              hasGrades: false,
+            }));
+
+          return [...atuais, ...novosAlunos];
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    const atualizarAoRetornar = () => carregarAlunos();
+    carregarAlunos();
+    window.addEventListener("focus", atualizarAoRetornar);
+    window.addEventListener("pageshow", atualizarAoRetornar);
+
+    return () => {
+      ativo = false;
+      window.removeEventListener("focus", atualizarAoRetornar);
+      window.removeEventListener("pageshow", atualizarAoRetornar);
+    };
+  }, []);
+
   // Modal de Lançamento / Edição de Notas
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     class: "3º Ano EM",
-    subject: "Matemática",
-    grade1: "",
-    grade2: "",
-    project: "",
+    trabalho1: "",
+    trabalho2: "",
+    nota1: "",
+    nota2: "",
+    nota3: "",
     attendance: "95%",
   });
 
@@ -157,14 +223,16 @@ export default function Principal() {
   };
 
   // Cálculo da média de cada aluno
-  const calculateAverage = (g1, g2, proj) => {
-    const avg = (Number(g1) + Number(g2) + Number(proj)) / 3;
+  const calculateAverage = (trabalho1, trabalho2, nota1, nota2, nota3, hasGrades = true) => {
+    if (!hasGrades) return "—";
+    const avg = (Number(trabalho1) + Number(trabalho2) + Number(nota1) + Number(nota2) + Number(nota3)) / 5;
     return avg.toFixed(1);
   };
 
   // Status do aluno com base na média
   const getStudentStatus = (avg) => {
     const num = parseFloat(avg);
+    if (!Number.isFinite(num)) return { label: "Sem notas", type: "" };
     if (num >= 7.0) return { label: "Aprovado", type: "approved" };
     if (num >= 5.5) return { label: "Em Alerta", type: "warning" };
     return { label: "Recuperação", type: "danger" };
@@ -176,10 +244,11 @@ export default function Principal() {
     setFormData({
       name: "",
       class: "3º Ano EM",
-      subject: "Matemática",
-      grade1: "",
-      grade2: "",
-      project: "",
+      trabalho1: "",
+      trabalho2: "",
+      nota1: "",
+      nota2: "",
+      nota3: "",
       attendance: "95%",
     });
     setIsModalOpen(true);
@@ -190,10 +259,11 @@ export default function Principal() {
     setFormData({
       name: student.name,
       class: student.class,
-      subject: student.subject,
-      grade1: student.grade1,
-      grade2: student.grade2,
-      project: student.project,
+      trabalho1: student.trabalho1,
+      trabalho2: student.trabalho2,
+      nota1: student.nota1,
+      nota2: student.nota2,
+      nota3: student.nota3,
       attendance: student.attendance,
     });
     setIsModalOpen(true);
@@ -212,10 +282,12 @@ export default function Principal() {
                 ...item,
                 name: formData.name,
                 class: formData.class,
-                subject: formData.subject,
-                grade1: parseFloat(formData.grade1) || 0,
-                grade2: parseFloat(formData.grade2) || 0,
-                project: parseFloat(formData.project) || 0,
+                hasGrades: true,
+                trabalho1: parseFloat(formData.trabalho1) || 0,
+                trabalho2: parseFloat(formData.trabalho2) || 0,
+                nota1: parseFloat(formData.nota1) || 0,
+                nota2: parseFloat(formData.nota2) || 0,
+                nota3: parseFloat(formData.nota3) || 0,
                 attendance: formData.attendance,
               }
             : item
@@ -227,14 +299,17 @@ export default function Principal() {
         id: `ALU-${Math.floor(100 + Math.random() * 900)}`,
         name: formData.name,
         class: formData.class,
-        subject: formData.subject,
+        subject: "Matemática",
         avatarBg: Math.random() > 0.5 ? "art-1" : "art-2",
         emoji: "🎓",
-        grade1: parseFloat(formData.grade1) || 0,
-        grade2: parseFloat(formData.grade2) || 0,
-        project: parseFloat(formData.project) || 0,
+        trabalho1: parseFloat(formData.trabalho1) || 0,
+        trabalho2: parseFloat(formData.trabalho2) || 0,
+        nota1: parseFloat(formData.nota1) || 0,
+        nota2: parseFloat(formData.nota2) || 0,
+        nota3: parseFloat(formData.nota3) || 0,
         attendance: formData.attendance || "95%",
         isHighlighted: false,
+        hasGrades: true,
       };
       setStudents((prev) => [newStudent, ...prev]);
     }
@@ -244,12 +319,13 @@ export default function Principal() {
 
   // Filtragem e busca da tabela
   const filteredStudents = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase("pt-BR");
     return students.filter((item) => {
-      const avg = parseFloat(calculateAverage(item.grade1, item.grade2, item.project));
-      const matchSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.subject.toLowerCase().includes(searchQuery.toLowerCase());
+      const avg = parseFloat(calculateAverage(item.trabalho1, item.trabalho2, item.nota1, item.nota2, item.nota3, item.hasGrades !== false));
+      const matchSearch = normalizedQuery.length < 3 ||
+        item.name.toLocaleLowerCase("pt-BR").includes(normalizedQuery) ||
+        item.id.toLocaleLowerCase("pt-BR").includes(normalizedQuery) ||
+        item.subject.toLocaleLowerCase("pt-BR").includes(normalizedQuery);
 
       const matchClass =
         selectedClass === "Todas" || item.class === selectedClass;
@@ -264,10 +340,11 @@ export default function Principal() {
       return matchSearch && matchClass && matchPill;
     });
   }, [students, searchQuery, selectedClass, activeFilterPill]);
+  const studentsWithGrades = filteredStudents.filter((student) => student.hasGrades !== false);
 
   // Alunos em Destaque (Coluna 1)
   const highlightedStudents = students.filter(
-    (s) => parseFloat(calculateAverage(s.grade1, s.grade2, s.project)) >= 9.0
+    (s) => parseFloat(calculateAverage(s.trabalho1, s.trabalho2, s.nota1, s.nota2, s.nota3, s.hasGrades !== false)) >= 9.0
   ).slice(0, 2);
 
   const currentSlide = slides[carouselIndex];
@@ -372,7 +449,7 @@ export default function Principal() {
               </div>
               <div className="student-highlight-grid">
                 {highlightedStudents.map((st) => {
-                  const avg = calculateAverage(st.grade1, st.grade2, st.project);
+                  const avg = calculateAverage(st.trabalho1, st.trabalho2, st.nota1, st.nota2, st.nota3);
                   return (
                     <div key={st.id} className="student-card-art" title={`Média: ${avg}`}>
                       <div className={`student-avatar-box ${st.avatarBg}`}>
@@ -558,7 +635,7 @@ export default function Principal() {
                 <span className="search-icon">🔍</span>
                 <input
                   type="text"
-                  placeholder="Buscar aluno ou matéria..."
+                  placeholder="Buscar aluno ou matéria (mín. 3 caracteres)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -588,15 +665,15 @@ export default function Principal() {
             </div>
             <div className="summary-item">
               <span className="summary-icon">✓</span>
-              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.grade1, student.grade2, student.project)).type === "approved").length}</strong><small>Aprovados</small></span>
+              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.trabalho1, student.trabalho2, student.nota1, student.nota2, student.nota3, student.hasGrades !== false)).type === "approved").length}</strong><small>Aprovados</small></span>
             </div>
             <div className="summary-item">
               <span className="summary-icon warning">!</span>
-              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.grade1, student.grade2, student.project)).type === "warning").length}</strong><small>Em alerta</small></span>
+              <span><strong>{filteredStudents.filter((student) => getStudentStatus(calculateAverage(student.trabalho1, student.trabalho2, student.nota1, student.nota2, student.nota3, student.hasGrades !== false)).type === "warning").length}</strong><small>Em alerta</small></span>
             </div>
             <div className="summary-item">
               <span className="summary-icon average">★</span>
-              <span><strong>{filteredStudents.length ? (filteredStudents.reduce((total, student) => total + Number(calculateAverage(student.grade1, student.grade2, student.project)), 0) / filteredStudents.length).toFixed(1) : "0.0"}</strong><small>Média da lista</small></span>
+              <span><strong>{studentsWithGrades.length ? (studentsWithGrades.reduce((total, student) => total + Number(calculateAverage(student.trabalho1, student.trabalho2, student.nota1, student.nota2, student.nota3)), 0) / studentsWithGrades.length).toFixed(1) : "0.0"}</strong><small>Média da lista</small></span>
             </div>
           </div>
 
@@ -606,9 +683,11 @@ export default function Principal() {
                 <tr>
                   <th>Estudante</th>
                   <th>Turma / Disciplina</th>
-                  <th>Prova 1 (P1)</th>
-                  <th>Prova 2 (P2)</th>
-                  <th>Trabalho / Projeto</th>
+                  <th>Trabalho 1</th>
+                  <th>Trabalho 2</th>
+                  <th>Nota 1</th>
+                  <th>Nota 2</th>
+                  <th>Nota 3</th>
                   <th>Média Final</th>
                   <th>Rendimento</th>
                   <th>Situação</th>
@@ -618,9 +697,9 @@ export default function Principal() {
               <tbody>
                 {filteredStudents.length > 0 ? (
                   filteredStudents.map((st) => {
-                    const avg = calculateAverage(st.grade1, st.grade2, st.project);
+                    const avg = calculateAverage(st.trabalho1, st.trabalho2, st.nota1, st.nota2, st.nota3, st.hasGrades !== false);
                     const status = getStudentStatus(avg);
-                    const percent = Math.min(Math.round((parseFloat(avg) / 10) * 100), 100);
+                    const percent = st.hasGrades === false ? null : Math.min(Math.round((parseFloat(avg) / 10) * 100), 100);
 
                     return (
                       <tr key={st.id}>
@@ -642,21 +721,31 @@ export default function Principal() {
                         </td>
 
                         <td>
-                          <span className="grade-val">{Number(st.grade1).toFixed(1)}</span>
+                          <span className="grade-val">{st.hasGrades === false ? "—" : Number(st.trabalho1).toFixed(1)}</span>
                         </td>
 
                         <td>
-                          <span className="grade-val">{Number(st.grade2).toFixed(1)}</span>
+                          <span className="grade-val">{st.hasGrades === false ? "—" : Number(st.trabalho2).toFixed(1)}</span>
                         </td>
 
                         <td>
-                          <span className="grade-val">{Number(st.project).toFixed(1)}</span>
+                          <span className="grade-val">{st.hasGrades === false ? "—" : Number(st.nota1).toFixed(1)}</span>
+                        </td>
+
+                        <td>
+                          <span className="grade-val">{st.hasGrades === false ? "—" : Number(st.nota2).toFixed(1)}</span>
+                        </td>
+
+                        <td>
+                          <span className="grade-val">{st.hasGrades === false ? "—" : Number(st.nota3).toFixed(1)}</span>
                         </td>
 
                         <td>
                           <span
                             className={`grade-average ${
-                              parseFloat(avg) >= 7.0
+                              !Number.isFinite(parseFloat(avg))
+                                ? ""
+                                : parseFloat(avg) >= 7.0
                                 ? "high"
                                 : parseFloat(avg) >= 5.5
                                 ? "medium"
@@ -668,7 +757,7 @@ export default function Principal() {
                         </td>
 
                         <td>
-                          <div className="performance-bar-wrapper">
+                          {percent === null ? "—" : <div className="performance-bar-wrapper">
                             <div className="performance-bar-bg">
                               <div
                                 className={`performance-bar-fill ${parseFloat(avg) >= 7.0 ? "high" : ""}`}
@@ -676,7 +765,7 @@ export default function Principal() {
                               />
                             </div>
                             <span className="performance-percent">{percent}%</span>
-                          </div>
+                          </div>}
                         </td>
 
                         <td>
@@ -699,7 +788,7 @@ export default function Principal() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: "32px", color: "var(--text-muted)" }}>
+                    <td colSpan={11} style={{ textAlign: "center", padding: "32px", color: "var(--text-muted)" }}>
                       Nenhum aluno encontrado para os filtros selecionados.
                     </td>
                   </tr>
@@ -741,33 +830,51 @@ export default function Principal() {
                   />
                 </div>
 
-                <div className="form-row-3">
+                <div className="form-group">
+                  <label>Turma</label>
+                  <select
+                    value={formData.class}
+                    onChange={(e) => setFormData({ ...formData, class: e.target.value })}
+                  >
+                    <option value="3º Ano EM">3º Ano EM</option>
+                    <option value="2º Semestre DS">2º Semestre DS</option>
+                    <option value="1º Ano EM">1º Ano EM</option>
+                  </select>
+                </div>
+
+                <div className="form-row-2">
                   <div className="form-group">
-                    <label>Turma</label>
-                    <select
-                      value={formData.class}
-                      onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                    >
-                      <option value="3º Ano EM">3º Ano EM</option>
-                      <option value="2º Semestre DS">2º Semestre DS</option>
-                      <option value="1º Ano EM">1º Ano EM</option>
-                    </select>
+                    <label>Trabalho 1 (0-10)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                      required
+                      placeholder="0.0"
+                      value={formData.trabalho1}
+                      onChange={(e) => setFormData({ ...formData, trabalho1: e.target.value })}
+                    />
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: "span 2" }}>
-                    <label>Disciplina</label>
+                  <div className="form-group">
+                    <label>Trabalho 2 (0-10)</label>
                     <input
-                      type="text"
-                      placeholder="Ex: Matemática"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                      required
+                      placeholder="0.0"
+                      value={formData.trabalho2}
+                      onChange={(e) => setFormData({ ...formData, trabalho2: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="form-row-3">
                   <div className="form-group">
-                    <label>Prova 1 (0-10)</label>
+                    <label>Nota 1 (0-10)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -775,13 +882,13 @@ export default function Principal() {
                       max="10"
                       required
                       placeholder="0.0"
-                      value={formData.grade1}
-                      onChange={(e) => setFormData({ ...formData, grade1: e.target.value })}
+                      value={formData.nota1}
+                      onChange={(e) => setFormData({ ...formData, nota1: e.target.value })}
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Prova 2 (0-10)</label>
+                    <label>Nota 2 (0-10)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -789,13 +896,12 @@ export default function Principal() {
                       max="10"
                       required
                       placeholder="0.0"
-                      value={formData.grade2}
-                      onChange={(e) => setFormData({ ...formData, grade2: e.target.value })}
+                      value={formData.nota2}
+                      onChange={(e) => setFormData({ ...formData, nota2: e.target.value })}
                     />
                   </div>
-
                   <div className="form-group">
-                    <label>Trabalho (0-10)</label>
+                    <label>Nota 3 (0-10)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -803,8 +909,8 @@ export default function Principal() {
                       max="10"
                       required
                       placeholder="0.0"
-                      value={formData.project}
-                      onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+                      value={formData.nota3}
+                      onChange={(e) => setFormData({ ...formData, nota3: e.target.value })}
                     />
                   </div>
                 </div>

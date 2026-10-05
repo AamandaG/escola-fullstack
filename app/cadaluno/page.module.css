@@ -597,6 +597,13 @@
 }
 
 /* BARRA DE AÇÕES DO FORMULÁRIO */
+.submitError {
+  margin: 0 0 14px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .formActionsRow {
   display: flex;
   align-items: center;

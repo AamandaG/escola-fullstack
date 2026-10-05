@@ -45,6 +45,8 @@ export default function Cadaluno() {
   // Modal / Toast de Sucesso
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastRegisteredStudent, setLastRegisteredStudent] = useState(null);
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Gerador automático de Registro Acadêmico (RA)
   const handleGenerateRa = () => {
@@ -108,30 +110,47 @@ export default function Cadaluno() {
   };
 
   // Envio do cadastro
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nome.trim()) return;
+    if (!nome.trim() || !idade || !serie) return;
 
     const studentRa = ra.trim() || `2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const studentEmail = email.trim() || `${nome.toLowerCase().replace(/\s+/g, ".")}@escola.edu.br`;
 
-    const newStudent = {
-      id: `ALU-${Math.floor(100 + Math.random() * 900)}`,
-      name: nome.trim(),
-      age: idade,
-      class: serie,
-      subject: disciplina,
-      ra: studentRa,
-      email: studentEmail,
-      emoji: selectedEmoji,
-      theme: selectedTheme,
-      turno: turno,
-      responsavel: responsavel,
-    };
+    setSubmitError("");
+    setIsSubmitting(true);
 
-    setRecentStudents((prev) => [newStudent, ...prev.slice(0, 4)]);
-    setLastRegisteredStudent(newStudent);
-    setShowSuccessModal(true);
+    try {
+      const resposta = await fetch("/api/alunos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: nome.trim(), idade: Number(idade), serie, ra: studentRa }),
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(dados.details || dados.error || "Não foi possível cadastrar o aluno.");
+
+      const newStudent = {
+        id: `ALU-${dados.aluno.lastInsertRowid}`,
+        name: nome.trim(),
+        age: idade,
+        class: serie,
+        subject: disciplina,
+        ra: studentRa,
+        email: studentEmail,
+        emoji: selectedEmoji,
+        theme: selectedTheme,
+        turno,
+        responsavel,
+      };
+
+      setRecentStudents((prev) => [newStudent, ...prev.slice(0, 4)]);
+      setLastRegisteredStudent(newStudent);
+      setShowSuccessModal(true);
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Excluir estudante do histórico local
@@ -517,13 +536,14 @@ export default function Cadaluno() {
               </div>
 
               {/* BOTÕES DE AÇÃO */}
+              {submitError && <p className={styles.submitError} role="alert">{submitError}</p>}
               <div className={styles.formActionsRow}>
                 <button type="button" className={styles.btnReset} onClick={handleResetForm}>
                   🔄 Limpar Formulário
                 </button>
 
-                <button type="submit" className={styles.btnSubmitPrimary}>
-                  <span>🚀 Finalizar Cadastro do Aluno</span>
+                <button type="submit" className={styles.btnSubmitPrimary} disabled={isSubmitting}>
+                  <span>{isSubmitting ? "Salvando aluno..." : "🚀 Finalizar Cadastro do Aluno"}</span>
                   <span aria-hidden="true">→</span>
                 </button>
               </div>
