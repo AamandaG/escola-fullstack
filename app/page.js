@@ -1,8 +1,6 @@
 
-import Principal from "./principal/page.jsx";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-   <Principal/>
-  );
+  redirect("/login");
 }
