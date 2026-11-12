@@ -10,6 +10,7 @@ export default function Header({ activeTab, onTabChange, onQuickAdd }) {
   const isCadaluno = pathname === "/cadaluno";
   const isNotas = pathname === "/notas";
   const isListaAlunos = pathname === "/listaluno" || pathname === "/conferir-alunos";
+  const isCadastros = pathname === "/cadastros";
 
   return (
     <header className="site-header">
@@ -53,6 +54,9 @@ export default function Header({ activeTab, onTabChange, onQuickAdd }) {
               <Link href="/conferir-alunos">Conferir lista</Link>
             </div>
           </details>
+          <Link href="/cadastros" className={`nav-link-pill ${isCadastros ? "active" : ""}`}>
+            Professores e disciplinas
+          </Link>
           {isHome ? (
             <>
               <button
